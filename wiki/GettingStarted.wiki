@@ -1,0 +1,27 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+How to use this object.  I will try and update this when I can but the best thing to do is download the source and read over the header file.
+
+
+= Important Files =
+WebDAV.m
+WebDAV.h
+
+
+
+= Initialize =
+{{{
+#import "WebDAV.h"
+}}}
+
+{{{
+WebDAV *web = [[WebDAV alloc] initWithUsername:@"YOURUSERNAME" password:@"YOURPASSWORD"];
+[web setDelegate:self];
+}}}
+
+= Listing Directorys =
+{{{
+[web listDir:@"/"];
+}}}
