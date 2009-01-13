@@ -9,8 +9,10 @@
 #import <Foundation/Foundation.h>
 
 enum ConnectionState {
-    kConnectionState_listDir
+    kConnectionState_listDir,
+	kConnectionState_makeDir,
 };
+
 typedef enum ConnectionState ConnectionState;
 
 @interface WebDAV : NSObject {
@@ -51,9 +53,11 @@ typedef enum ConnectionState ConnectionState;
 -(void)setDelegate:(id)val;
 
 -(NSString *)buildURL;
+
 -(void)listDir:(NSString *)path;
 -(void)throwError:(NSString *)error;
 
+-(void)makeDir:(NSString *)path;
 
 
 @end

@@ -9,8 +9,10 @@
 #import "WebDAV.h"
 
 @interface WebDAV (Private)
-	-(void)listDirSuccess:(NSMutableArray *)dirList;
-	-(void)listDirFailed:(NSString *)error;
+-(void)listDirSuccess:(NSMutableArray *)dirList;
+-(void)listDirFailed:(NSString *)error;
+-(void)makeDirFailed:(NSString *)error;
+-(void)makeDirSuccess;
 @end
 
 @implementation WebDAV
@@ -118,6 +120,32 @@ static NSString *kURLTemplate = @"https://idisk.me.com/%@";
 	self.connection = [NSURLConnection connectionWithRequest:request delegate:self];	
 }
 
+/************** Make Directory ******************/
+/* Pass in the full path to create */
+
+-(void)makeDir:(NSString *)path{
+	connectionState = kConnectionState_makeDir;
+	
+	if (self.connection != nil){
+		return [self throwError:@"A connection is already open; close it"];	
+	}
+	
+	NSURL *url = [NSURL URLWithString:[[NSString stringWithFormat:@"%@%@",[self buildURL],path] stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]];
+
+	if (url == nil){
+		return [self throwError:@"Failed to create URL, maybe the filename is invalid?"];	
+	}
+	
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+	[request setHTTPMethod:@"MKCOL"];
+	[request setTimeoutInterval:self.globalTimeout];
+
+	self.connection = [NSURLConnection connectionWithRequest:request delegate:self];
+}
+
+
+
+
 - (void)connection:(NSURLConnection *)conn didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge{	    
     self.pendingChallenge = challenge;
 	[self setup:self.username password:self.password];
@@ -126,7 +154,21 @@ static NSString *kURLTemplate = @"https://idisk.me.com/%@";
 - (void)connection:(NSURLConnection *)conn didReceiveResponse:(NSURLResponse *)response{
     NSInteger statusCode = ((NSHTTPURLResponse *)response).statusCode;
 	
-	NSLog(@"Status Code: %d",statusCode);
+	switch (connectionState) {
+		case kConnectionState_makeDir:
+			if (statusCode == 201){
+				if ( [delegate respondsToSelector:@selector(makeDirSuccess)] ) {
+					[delegate makeDirSuccess];
+				}				
+			}
+			else{
+				[self throwError:@"Failed to create directory"];
+			}
+			break;
+		default:
+			NSLog(@"Status Code: %d",statusCode);
+			break;
+	}
 }
 
 - (void)connection:(NSURLConnection *)conn didReceiveData:(NSData *)data{
@@ -173,6 +215,11 @@ static NSString *kURLTemplate = @"https://idisk.me.com/%@";
 		case kConnectionState_listDir:
 			if ( [delegate respondsToSelector:@selector(listDirFailed:)] ) {
 				[delegate listDirFailed:error];
+			}				
+			break;
+		case kConnectionState_makeDir:
+			if ( [delegate respondsToSelector:@selector(makeDirFailed:)] ) {
+				[delegate makeDirFailed:error];
 			}				
 			break;
 	}
