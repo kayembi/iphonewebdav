@@ -30,5 +30,7 @@ WebDAV *web = [[WebDAV alloc] initWithUsername:@"YOURUSERNAME" password:@"YOURPA
 
 This method will respond with delegates when it's done. Either success or fail.
 
+{{{
 -(void)listDirFailed:(NSString *)reason;
 -(void)listDirSuccess:(NSMutableArray *)dirList;
+}}}
