@@ -1,11 +1,13 @@
-#summary One-sentence summary of this page.
+#summary The basics of how to use this object in your code.
 
 = Introduction =
 
-How to use this object.  I will try and update this when I can but the best thing to do is download the source and read over the header file.
+I will try and update this when I can but the best thing to do is download the source and read over the header file.
 
 
 = Important Files =
+Copy both of these files to your project.
+
 WebDAV.m
 WebDAV.h
 
