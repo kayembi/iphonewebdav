@@ -23,14 +23,26 @@ WebDAV *web = [[WebDAV alloc] initWithUsername:@"YOURUSERNAME" password:@"YOURPA
 [web setDelegate:self];
 }}}
 
-= Listing Directorys =
+= Listing Directoryies =
 {{{
 [web listDir:@"/"];
 }}}
 
-This method will respond with delegates when it's done. Either success or fail.
+Responds with delegates
 
 {{{
 -(void)listDirFailed:(NSString *)reason;
 -(void)listDirSuccess:(NSMutableArray *)dirList;
+}}}
+
+= Making Directories =
+{{{
+[web makeDir:@"/Documents/My Directory"];
+}}}
+
+Responds with delegates
+
+{{{
+-(void)makeDirFailed:(NSString *)error;
+-(void)makeDirSuccess;
 }}}
