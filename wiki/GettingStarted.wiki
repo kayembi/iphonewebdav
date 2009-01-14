@@ -23,7 +23,7 @@ WebDAV *web = [[WebDAV alloc] initWithUsername:@"YOURUSERNAME" password:@"YOURPA
 [web setDelegate:self];
 }}}
 
-= Listing Directoryies =
+= Listing Directories =
 {{{
 [web listDir:@"/"];
 }}}
