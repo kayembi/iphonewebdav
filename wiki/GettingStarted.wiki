@@ -46,3 +46,38 @@ Responds with delegates
 -(void)makeDirFailed:(NSString *)error;
 -(void)makeDirSuccess;
 }}}
+
+= Uploading Files =
+{{{
+NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+NSString *documentsDirectory = [paths objectAtIndex:0];
+documentsDirectory = [NSString stringWithFormat:@"%@/test.jpg",documentsDirectory];
+	
+[web uploadFile:documentsDirectory destination:@"/Documents/test.jpg"];
+}}}
+
+Responds with delegates
+
+{{{
+-(void)uploadFileFailed:(NSString *)error;
+-(void)uploadFileSuccess;
+}}}
+
+
+= Uploading Data =
+This function is used by the uploadFile function. You can use it directly too if you have the data already loaded into memory
+
+{{{
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+	NSString *documentsDirectory = [paths objectAtIndex:0];
+	documentsDirectory = [NSString stringWithFormat:@"%@/test.jpg",documentsDirectory];
+	
+	NSData *testData = [[NSData alloc] initWithContentsOfFile:documentsDirectory];
+	[web uploadData:testData destination:@"/Documents/test-data.jpg"];
+}}}
+
+Responds with delegates
+{{{
+-(void)uploadDataFailed:(NSString *)error;
+-(void)uploadDataSuccess;
+}}}
