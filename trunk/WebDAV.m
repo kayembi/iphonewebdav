@@ -13,6 +13,10 @@
 -(void)listDirFailed:(NSString *)error;
 -(void)makeDirFailed:(NSString *)error;
 -(void)makeDirSuccess;
+-(void)uploadFileFailed:(NSString *)error;
+-(void)uploadFileSuccess;
+-(void)uploadDataFailed:(NSString *)error;
+-(void)uploadDataSuccess;
 @end
 
 @implementation WebDAV
@@ -144,6 +148,56 @@ static NSString *kURLTemplate = @"https://idisk.me.com/%@";
 }
 
 
+/************ Upload File *****************/
+
+/** Pass a data object if you already have it read in */
+-(void)uploadData:(NSData *)data destination:(NSString *)path{
+	if (connectionState != kConnectionState_uploadFile)
+		connectionState = kConnectionState_uploadData;
+
+	if (path == nil || [path isEqualToString:@""]){
+		return [self throwError:@"The destination path is missing"];	
+	}
+	
+	if (data == nil){
+		return [self throwError:@"Data is missing"];	
+	}
+	
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self buildURL],path]];
+	
+	NSLog(@"updateData URL: %@",url);
+	
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+    
+    [request setHTTPMethod:@"PUT"];
+    [request setHTTPBody:data];
+    
+    self.connection = [NSURLConnection connectionWithRequest:request delegate:self];
+}
+
+/** Pass a filename if it's on disk */
+-(void)uploadFile:(NSString *)local destination:(NSString *)path{
+	connectionState = kConnectionState_uploadFile;
+
+	if (path == nil || [path isEqualToString:@""]){
+		return [self throwError:@"The destination path is missing"];	
+	}
+	
+	if ([[NSFileManager defaultManager] fileExistsAtPath:local]){
+		NSData *outgoingData = [NSData dataWithContentsOfFile:local];
+		if (outgoingData){
+			[self uploadData:outgoingData destination:path];
+		}
+		else{
+			return [self throwError:@"Failed reading in file"];	
+		}
+	}
+	else{
+		return [self throwError:@"That file does not exist"];	
+	}
+}
+
+
 
 
 - (void)connection:(NSURLConnection *)conn didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge{	    
@@ -163,6 +217,26 @@ static NSString *kURLTemplate = @"https://idisk.me.com/%@";
 			}
 			else{
 				[self throwError:@"Failed to create directory"];
+			}
+			break;
+		case kConnectionState_uploadData:
+			if (statusCode == 201){
+				if ( [delegate respondsToSelector:@selector(uploadDataSuccess)] ) {
+					[delegate uploadDataSuccess];
+				}				
+			}
+			else{
+				[self throwError:@"Failed to upload data"];
+			}
+			break;
+		case kConnectionState_uploadFile:
+			if (statusCode == 201){
+				if ( [delegate respondsToSelector:@selector(uploadFileSuccess)] ) {
+					[delegate uploadFileSuccess];
+				}				
+			}
+			else{
+				[self throwError:@"Failed to upload file"];
 			}
 			break;
 		default:
@@ -220,6 +294,16 @@ static NSString *kURLTemplate = @"https://idisk.me.com/%@";
 		case kConnectionState_makeDir:
 			if ( [delegate respondsToSelector:@selector(makeDirFailed:)] ) {
 				[delegate makeDirFailed:error];
+			}				
+			break;
+		case kConnectionState_uploadFile:
+			if ( [delegate respondsToSelector:@selector(uploadFileFailed:)] ) {
+				[delegate uploadFileFailed:error];
+			}				
+			break;
+		case kConnectionState_uploadData:
+			if ( [delegate respondsToSelector:@selector(uploadDataFailed:)] ) {
+				[delegate uploadDataFailed:error];
 			}				
 			break;
 	}

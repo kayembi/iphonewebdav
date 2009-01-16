@@ -11,6 +11,8 @@
 enum ConnectionState {
     kConnectionState_listDir,
 	kConnectionState_makeDir,
+	kConnectionState_uploadFile,
+	kConnectionState_uploadData,
 };
 
 typedef enum ConnectionState ConnectionState;
@@ -59,5 +61,7 @@ typedef enum ConnectionState ConnectionState;
 
 -(void)makeDir:(NSString *)path;
 
+-(void)uploadData:(NSData *)data destination:(NSString *)path;
+-(void)uploadFile:(NSString *)local destination:(NSString *)path;
 
 @end
